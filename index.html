@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coquette Task Manager ✧</title>
+  <style>
+    :root{
+      --bg:#fff7fb;
+      --panel:#ffeaf3;
+      --accent:#ff8fb3;
+      --accent-2:#ffd4e3;
+      --ink:#5a4a4f;
+      --muted:#8f7a81;
+      --ring:#ffb3c8;
+      --ok:#70c27b;
+      --danger:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-rounded, "SF Pro Rounded", "Poppins", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(60px 60px at 15% 20%, #fff, transparent 70%),
+        radial-gradient(80px 80px at 85% 10%, #fff, transparent 70%),
+        radial-gradient(70px 70px at 80% 80%, #fff, transparent 70%),
+        var(--bg);
+      display:flex; align-items:center; justify-content:center; padding:22px;
+    }
+
+    .app{
+      width:min(960px, 95vw);
+      background:linear-gradient(180deg, #fff, var(--panel));
+      border:1.5px solid var(--accent-2);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:
+        0 10px 30px rgba(255,143,179,.25),
+        inset 0 0 0 1px #fff;
+    }
+
+    .header{
+      display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+      padding:8px 6px 16px; border-bottom:1px dashed var(--accent-2);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight:700; letter-spacing:.3px;
+    }
+    .brand .logo{
+      width:42px; height:42px; border-radius:50%;
+      display:grid; place-items:center;
+      background:radial-gradient(circle at 30% 30%, #fff 0 35%, var(--panel) 35% 100%);
+      border:1px solid var(--accent-2);
+      box-shadow:0 4px 10px rgba(255,143,179,.25);
+      font-size:22px;
+    }
+    .brand h1{margin:0; font-size:1.25rem}
+    .kpi{font-size:.9rem; color:var(--muted)}
+
+    .add{
+      display:grid; grid-template-columns: 1fr 140px 120px auto; gap:10px;
+      margin:16px 0 6px;
+    }
+    .add input, .add select, .add button{
+      font:inherit; padding:10px 12px; border-radius:12px; border:1.5px solid var(--accent-2);
+      background:#fff; color:var(--ink); outline:none;
+    }
+    .add input:focus, .add select:focus{box-shadow:0 0 0 4px var(--ring)}
+    .add button{
+      background:linear-gradient(180deg, var(--accent), #ff7aa5);
+      color:#fff; font-weight:700; border:none; cursor:pointer;
+      box-shadow:0 6px 16px rgba(255,136,170,.35);
+    }
+    .add button:hover{filter:brightness(.98)}
+    .add button:active{transform:translateY(1px)}
+
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 14px;
+    }
+    .toolbar input, .toolbar select, .toolbar button{
+      padding:8px 12px; border-radius:12px; border:1.5px solid var(--accent-2); background:#fff;
+    }
+    .toolbar button{cursor:pointer}
+    .toolbar .pill{
+      background:#fff; border:1.5px solid var(--accent-2);
+    }
+    .toolbar .pill.active{background:var(--panel); border-color:var(--accent)}
+
+    .progress{
+      height:10px; background:#fff; border:1.5px solid var(--accent-2); border-radius:999px; overflow:hidden;
+    }
+    .progress > div{height:100%; width:0; background:linear-gradient(90deg, var(--ok), #b6e4be)}
+
+    ul.list{list-style:none; padding:0; margin:14px 0 0; display:grid; gap:10px}
+    .item{
+      display:grid; grid-template-columns:auto 1fr auto auto; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:16px; background:#fff;
+      border:1.5px solid var(--accent-2); box-shadow:0 4px 12px rgba(255,143,179,.12);
+    }
+    .item.done{opacity:.75}
+    .item input[type="checkbox"]{width:18px; height:18px; accent-color:var(--ok)}
+    .title{
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .title .name{font-weight:600}
+    .title .meta{font-size:.8rem; color:var(--muted)}
+    .badges{display:flex; gap:6px}
+    .badge{
+      font-size:.75rem; padding:4px 8px; border-radius:999px; background:var(--panel); border:1px solid var(--accent-2)
+    }
+    .prio-High{background:#ffe1e9; border-color:#ffc3d6}
+    .prio-Medium{background:#fff2df; border-color:#ffd9a1}
+    .prio-Low{background:#e9f7ff; border-color:#bfe7ff}
+
+    .actions{display:flex; gap:6px}
+    .icon-btn{
+      border:none; background:#fff; border:1.5px solid var(--accent-2); padding:6px 10px; border-radius:12px; cursor:pointer;
+    }
+    .icon-btn.edit{border-color:#bfe7ff}
+    .icon-btn.delete{border-color:#ffd0d0; color:var(--danger)}
+    .empty{
+      text-align:center; color:var(--muted); padding:24px 8px; border:2px dashed var(--accent-2); border-radius:16px; background:#fff
+    }
+
+    /* lil’ ribbon */
+    .ribbon{
+      position:relative; padding:6px 14px; background:var(--panel); border:1px solid var(--accent-2); border-radius:12px;
+    }
+    .ribbon:before, .ribbon:after{
+      content:"🎀"; position:absolute; top:-12px; font-size:16px; opacity:.9;
+    }
+    .ribbon:before{left:-6px} .ribbon:after{right:-6px}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">🎀</div>
+        <h1>Coquette Tasks</h1>
+      </div>
+      <div class="kpi"><span id="kpiCount">0</span> tasks • <span id="kpiDone">0</span> done</div>
+    </div>
+
+    <!-- Add form -->
+    <div class="add" aria-label="Add new task">
+      <input id="taskInput" type="text" placeholder="Add a cute little task…" />
+      <input id="dueInput" type="date" />
+      <select id="prioInput" aria-label="Priority">
+        <option>Medium</option>
+        <option>High</option>
+        <option>Low</option>
+      </select>
+      <button id="addBtn">Add ✧</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search…" />
+      <div class="ribbon">
+        <button class="pill active" data-filter="all">All</button>
+        <button class="pill" data-filter="active">Active</button>
+        <button class="pill" data-filter="done">Done</button>
+      </div>
+      <select id="sorter" title="Sort">
+        <option value="created-desc">Newest</option>
+        <option value="created-asc">Oldest</option>
+        <option value="due-asc">Due date ↑</option>
+        <option value="due-desc">Due date ↓</option>
+        <option value="prio-desc">Priority High→Low</option>
+        <option value="prio-asc">Priority Low→High</option>
+      </select>
+      <button id="clearDone" class="pill">Clear done</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress" aria-label="Progress">
+      <div id="bar"></div>
+    </div>
+
+    <!-- List -->
+    <ul class="list" id="list"></ul>
+    <div class="empty" id="empty" hidden>
+      Nothing here yet—add your first task 💌
+    </div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+
+    const state = {
+      tasks: JSON.parse(localStorage.getItem("coquette_tasks") || "[]"),
+      filter: "all",
+      search: "",
+      sort: "created-desc",
+    };
+
+    const save = () => localStorage.setItem("coquette_tasks", JSON.stringify(state.tasks));
+
+    const prioRank = p => ({High:3, Medium:2, Low:1})[p] || 2;
+
+    function render(){
+      // stats
+      const done = state.tasks.filter(t=>t.done).length;
+      $("#kpiCount").textContent = state.tasks.length;
+      $("#kpiDone").textContent = done;
+
+      // progress
+      const pct = state.tasks.length ? Math.round(done/state.tasks.length*100) : 0;
+      $("#bar").style.width = pct + "%";
+
+      // filter + search
+      let items = state.tasks.filter(t=>{
+        if(state.filter==="active" && t.done) return false;
+        if(state.filter==="done" && !t.done) return false;
+        if(state.search && !t.title.toLowerCase().includes(state.search)) return false;
+        return true;
+      });
+
+      // sort
+      items.sort((a,b)=>{
+        const [key,dir] = state.sort.split("-");
+        let va,vb;
+        if(key==="created"){va=a.created; vb=b.created;}
+        if(key==="due"){va=a.due||""; vb=b.due||"";}
+        if(key==="prio"){va=prioRank(a.prio); vb=prioRank(b.prio);}
+        return dir==="asc" ? (va>vb?1:-1) : (va<vb?1:-1);
+      });
+
+      const list = $("#list");
+      list.innerHTML = "";
+      $("#empty").hidden = items.length !== 0;
+
+      for(const t of items){
+        const li = document.createElement("li");
+        li.className = "item"+(t.done?" done":"");
+        li.innerHTML = `
+          <input type="checkbox" ${t.done?"checked":""} aria-label="Mark done"/>
+          <div class="title">
+            <div class="name" contenteditable="true" spellcheck="false">${escapeHtml(t.title)}</div>
+            <div class="meta">
+              ${t.due ? `Due: ${t.due}` : "No due date"}
+            </div>
+          </div>
+          <div class="badges">
+            <span class="badge prio-${t.prio}">${t.prio}</span>
+          </div>
+          <div class="actions">
+            <button class="icon-btn edit" title="Rename">✏️</button>
+            <button class="icon-btn delete" title="Delete">🗑️</button>
+          </div>
+        `;
+        // handlers
+        const [chk, nameEl, , , actions] = [li.children[0], li.querySelector(".name"), null, null, li.querySelector(".actions")];
+        chk.addEventListener("change", ()=>{
+          t.done = chk.checked; save(); render();
+        });
+        nameEl.addEventListener("blur", ()=>{
+          t.title = nameEl.textContent.trim() || t.title; save(); render();
+        });
+        actions.querySelector(".edit").addEventListener("click", ()=>{
+          nameEl.focus();
+          document.execCommand && document.execCommand("selectAll", false, null);
+        });
+        actions.querySelector(".delete").addEventListener("click", ()=>{
+          state.tasks = state.tasks.filter(x=>x.id!==t.id); save(); render();
+        });
+
+        $("#list").appendChild(li);
+      }
+    }
+
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    // Add
+    $("#addBtn").addEventListener("click", addFromForm);
+    $("#taskInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addFromForm() });
+
+    function addFromForm(){
+      const title = $("#taskInput").value.trim();
+      if(!title) return $("#taskInput").focus();
+      const due = $("#dueInput").value || "";
+      const prio = $("#prioInput").value;
+      state.tasks.unshift({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
+        title, due, prio, done:false, created: Date.now()
+      });
+      $("#taskInput").value = "";
+      save(); render();
+    }
+
+    // Filter, search, sort, clear
+    $("#search").addEventListener("input", e=>{ state.search = e.target.value.toLowerCase(); render(); });
+    $("#sorter").addEventListener("change", e=>{ state.sort = e.target.value; render(); });
+    $("#clearDone").addEventListener("click", ()=>{
+      state.tasks = state.tasks.filter(t=>!t.done); save(); render();
+    });
+    $$('.toolbar .pill[data-filter]').forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        $$('.toolbar .pill').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        state.filter = btn.dataset.filter;
+        render();
+      });
+    });
+
+    // first paint
+    render();
+  </script>
+</body>
+</html>
